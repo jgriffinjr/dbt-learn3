@@ -1,6 +1,6 @@
 with orders as
 (
-select cst.customer_id ,ord.order_id ,pmt.amount ,ord."status"
+select cst.customer_id ,ord.order_id ,pmt.amount ,ord.status
 
 from {{ ref('stg_customers') }} cst
 inner join {{ ref('stg_orders') }} ord on ord.customer_id = cst.customer_id
