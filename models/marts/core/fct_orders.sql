@@ -1,10 +1,31 @@
-with orders as
-(
-select cst.customer_id ,ord.order_id ,pmt.amount ,ord.status
+with orders as  (
+    select * from {{ ref('stg_orders' )}}
+),
 
-from {{ ref('stg_customers') }} cst
-inner join {{ ref('stg_orders') }} ord on ord.customer_id = cst.customer_id
-inner join {{ ref('stg_payments') }} pmt on pmt.order_id = ord.order_id
+payments as (
+    select * from {{ ref('stg_payments') }}
+),
 
+order_payments as (
+    select
+        order_id,
+        sum(case when status = 'success' then amount end) as amount
+
+    from payments
+    group by 1
+),
+
+final as (
+
+    select
+        orders.order_id,
+        orders.customer_id,
+        orders.order_date,
+        coalesce(order_payments.amount, 0) as amount
+
+    from orders
+    left join order_payments using (order_id)
 )
-select * from orders
+
+select * from final
+
